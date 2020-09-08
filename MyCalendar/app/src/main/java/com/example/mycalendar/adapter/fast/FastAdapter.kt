@@ -5,7 +5,6 @@ import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
-import com.rantea.animeowm.adapter.fast.anim.ExpandBinder
 import java.util.*
 
 open class FastAdapter<T>(
@@ -18,13 +17,7 @@ open class FastAdapter<T>(
     val itemsBackup by lazy {
         mutableListOf<T>().apply { addAll(items) }
     }
-    var expandBinder: ExpandBinder<FastViewHolder>? = null
     private val fastAdapterFilter = FastAdapterFilter()
-
-    init {
-        if (expandViewId != 0) expandBinder = ExpandBinder()
-        onBindView?.expandBinder = expandBinder
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FastViewHolder {
         val viewHolder = FastViewHolder(
@@ -33,9 +26,7 @@ open class FastAdapter<T>(
                         parent,
                         false
                 )
-        ).apply {
-            expandView = itemView.findViewById(expandViewId)
-        }
+        )
         return viewHolder
     }
 
@@ -44,7 +35,6 @@ open class FastAdapter<T>(
     }
 
     override fun onBindViewHolder(holder: FastViewHolder, position: Int) {
-        expandBinder?.bind(holder, position)
         onBindView?.onBindView(holder, position)
 
     }

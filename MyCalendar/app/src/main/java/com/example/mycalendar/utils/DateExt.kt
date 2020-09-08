@@ -5,21 +5,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object DateFomat {
-    val TYPE_1 = SimpleDateFormat("MM/dd/yyyy", Locale.US)
+    val TYPE_1 = SimpleDateFormat("dd/MM/yyyy", Locale.US)
     val TYPE_2 = SimpleDateFormat("hh:mm a", Locale.US)
     val TYPE_3 = SimpleDateFormat("HH:mm:ss", Locale.US)
-    //    val TYPE_3 = SimpleDateFormat("MMMM d, yyyy (EEE)", Locale.US)
-//    val TYPE_JP_3 = SimpleDateFormat("yyyy年MM月dd日(EEE)", Locale.US)
-//    val TYPE_4 = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-//    val TYPE_5 = SimpleDateFormat("HH:mm", Locale.US)
-    //    val TYPE_5 = SimpleDateFormat("MMMM d, yyyy", Locale.US)
-    val TYPE_JP_5 = SimpleDateFormat("yyyy年MM月dd日", Locale.US)
-    val TYPE_JP_6 = SimpleDateFormat("yyyy年MM月", Locale.US)
-    val TYPE_7 = SimpleDateFormat("yyyy/MM/dd", Locale.US)
-//    val TYPE_JP_6 = SimpleDateFormat("MM月dd日", Locale.US)
-//    val TYPE_6 = SimpleDateFormat("MMM d", Locale.US)
-//    val TYPE_8 = SimpleDateFormat("yyyy/M/d", Locale.US)
-//    val TYPE_9 = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ", Locale.US)
+    val TYPE_4 = SimpleDateFormat("MMMM/yyyy", Locale.US)
 }
 
 
