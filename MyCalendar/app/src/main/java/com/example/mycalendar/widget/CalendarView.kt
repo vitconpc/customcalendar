@@ -30,7 +30,7 @@ class CalendarView : FrameLayout {
     private fun initView() {
         inflate(context, R.layout.layout_calendar, this)
         val adapter = MainAdapter()
-        adapter.notifRefreshAdapter = {
+        adapter.notifyAdapter = {
             if (adapter.weekMode) {
                 val week = it.get(Calendar.WEEK_OF_YEAR)
                 vp_calendar.setCurrentItem(FOCUS + week, false)
