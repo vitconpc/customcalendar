@@ -1,63 +1,112 @@
-package com.rantea.animeowm.widget
+package com.example.mycalendar.widget
 
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.mycalendar.R
+import com.example.mycalendar.adapter.fast.FastViewHolder
 import com.example.mycalendar.utils.DateFomat
 import com.example.mycalendar.utils.Logger
 import com.example.mycalendar.utils.format
 import com.example.mycalendar.utils.setEndListener
-import com.rantea.animeowm.adapter.fast.FastAdapter
-import com.rantea.animeowm.adapter.fast.FastViewHolder
-import com.rantea.animeowm.adapter.fast.OnBindView
-
-import com.rantea.animeowm.widget.DayAdapter.Companion.WEEK_MODE_NUMBER
+import com.example.mycalendar.widget.DayAdapter.Companion.WEEK_MODE_NUMBER
 import kotlinx.android.synthetic.main.item_month.view.*
 import java.util.*
 
-class MainAdapter(val weekModeRefeshAdapter: (Calendar) -> Unit) : FastAdapter<Any>(
-    mutableListOf(), object : OnBindView() {
-        override fun onBindView(holder: FastViewHolder, position: Int) {}
-    }, R.layout.item_month
-) {
+class MainAdapter : RecyclerView.Adapter<FastViewHolder>() {
+
+    var notifRefreshAdapter: (Calendar) -> Unit = {}
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FastViewHolder {
+        return FastViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.item_month, parent, false)
+        )
+    }
 
     var midYear: Int = 0
     var weekMode: Boolean = false
 
-    override fun onBindViewHolder(holder: FastViewHolder, position: Int) {
-        super.onBindViewHolder(holder, position)
-        if (weekMode) {
-            holder.itemView.rv_month.run {
-                val calendar = getCalendarByWeek(midYear, position - FOCUS)
-                Logger.e("4:" + calendar.format(DateFomat.TYPE_1))
-                holder.itemView.tv_test.text = calendar.format(DateFomat.TYPE_4)
+    var animationOn: Boolean = false
+    var animationLine: Int = 0
 
+    override fun onBindViewHolder(holder: FastViewHolder, position: Int) {
+        if (weekMode) {
+            val calendar = getCalendarByWeek(midYear, position - FOCUS)
+            holder.itemView.tv_test.text = calendar.format(DateFomat.TYPE_4)
+
+            holder.itemView.rv_month.run {
                 adapter = DayAdapter(calendar, WEEK_MODE_NUMBER)
-                layoutManager = GridLayoutManager(holder.itemView.context, 7)
+                layoutManager = GridLayoutManager(holder.itemView.context, WEEK_MODE_NUMBER)
+            }
+
+            holder.itemView.tv_week.setOnClickListener {
+                //change to month mode
+                val cal = getCalendarByWeek(midYear, position - FOCUS)
+                cal.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY)
+
+                animationLine = cal.get(Calendar.WEEK_OF_MONTH)
+                animationOn = true
+                weekMode = false
+
+                notifRefreshAdapter(cal)
             }
         } else {
             val year = position / MONTH_MAX
             val month = position % MONTH_MAX
             val calendar = getCalendarByMonth(year, month)
-            val startDOW = calendar.get(Calendar.DAY_OF_WEEK) - 2
 
+            val startDOW = calendar.get(Calendar.DAY_OF_WEEK) - 2
             holder.itemView.tv_test.text = calendar.format(DateFomat.TYPE_4)
 
             holder.itemView.rv_month.run {
                 adapter = DayAdapter(calendar, 42, month, startDOW)
-                layoutManager = GridLayoutManager(holder.itemView.context, 7)
+                layoutManager = GridLayoutManager(holder.itemView.context, WEEK_MODE_NUMBER)
             }
 
             holder.itemView.tv_week.setOnClickListener {
-                val calendar1 = getCalendarByMonth(year, month)
-                Logger.e("1:" + calendar1.format(DateFomat.TYPE_1))
-                calendar1.set(Calendar.DAY_OF_WEEK, 1)
+                //change to week mode
+                val cal = getCalendarByMonth(year, month)
                 midYear = year
                 weekMode = true
-                Logger.e("2:" + calendar1.format(DateFomat.TYPE_1))
+                animationRefeshAdapter(holder.itemView.rv_month.adapter as DayAdapter, cal)
+            }
 
-                animationRefeshAdapter(holder.itemView.rv_month.adapter as DayAdapter, calendar1)
+            if (animationOn) {
+                animationOn = false
+                animationRefeshAdapter2(holder.itemView.rv_month.adapter as DayAdapter, calendar)
             }
         }
+    }
+
+    fun onBindWeekMode(holder: FastViewHolder, position: Int) {
+
+    }
+
+    fun onBindMonthMode(holder: FastViewHolder, position: Int) {
+
+    }
+
+    private fun animationRefeshAdapter2(
+        adapter: DayAdapter,
+        calendar: Calendar
+    ) {
+        Logger.e("animationRefeshAdapter2")
+//        for (holder in adapter.holders) {
+//            val pos = holder.itemView.tag as Int
+//            if (pos < WEEK_MODE_NUMBER) continue
+//
+//            val move = pos / WEEK_MODE_NUMBER - animationLine
+//
+//            val anim = holder.itemView.animate()
+//                .translationYBy(-holder.itemView.height.toFloat() *move)
+//                .alpha(0f)
+//                .setDuration(1000)
+//
+//            if (holder == adapter.holders.last()) {
+//                anim.setEndListener { notifRefreshAdapter(calendar) }.start()
+//            } else anim.start()
+//        }
     }
 
     private fun animationRefeshAdapter(
@@ -66,19 +115,19 @@ class MainAdapter(val weekModeRefeshAdapter: (Calendar) -> Unit) : FastAdapter<A
     ) {
         for (holder in adapter.holders) {
             val pos = holder.itemView.tag as Int
-            if (pos < 7) continue
+            if (pos < WEEK_MODE_NUMBER) continue
             val anim = holder.itemView.animate()
-                .translationYBy(-holder.itemView.height.toFloat() * (pos / 7))
+                .translationYBy(-holder.itemView.height.toFloat() * (pos / WEEK_MODE_NUMBER))
                 .alpha(0f)
                 .setDuration(1000)
 
             if (holder == adapter.holders.last()) {
-                anim.setEndListener { weekModeRefeshAdapter(calendar) }.start()
+                anim.setEndListener { notifRefreshAdapter(calendar) }.start()
             } else anim.start()
         }
     }
 
-    fun getCalendarByMonth(year: Int, month: Int): Calendar {
+    private fun getCalendarByMonth(year: Int, month: Int): Calendar {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.YEAR, year)
         calendar.set(Calendar.MONTH, month)
@@ -86,11 +135,11 @@ class MainAdapter(val weekModeRefeshAdapter: (Calendar) -> Unit) : FastAdapter<A
         return calendar
     }
 
-    fun getCalendarByWeek(year: Int, week: Int): Calendar {
+    private fun getCalendarByWeek(year: Int, week: Int): Calendar {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.YEAR, year)
         calendar.set(Calendar.WEEK_OF_YEAR, week)
-        calendar.set(Calendar.DAY_OF_WEEK, 2)
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
         return calendar
     }
 
